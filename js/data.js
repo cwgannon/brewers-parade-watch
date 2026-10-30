@@ -111,13 +111,14 @@ window.PW = {
 
   // YouTube channels. "live_stream?channel=" shows whatever that channel is
   // broadcasting right now; if it is not live, YouTube shows an offline card.
+  // FOX6 and WISN block that channel embed, so "video" names today's stream directly.
   // "substitutes" fill the Brewers tab until the team goes live, first one on
   // the air wins.
   youtube: {
     substitutes: ["fox6", "wisn", "tmj4", "cbs58", "mlb"],
     brewers: { id: "UCybiT6P8jSv7gIxC4cHXl2Q", name: "Brewers", fallback: "https://www.youtube.com/@Brewers/streams" },
-    fox6: { id: "UCzHN-FjWDMsgfGPvRq7oy-Q", name: "FOX6", fallback: "https://www.fox6now.com/live" },
-    wisn: { id: "UC8Tm7Xuz8QekHzjsDxgFNnw", name: "WISN 12", fallback: "https://www.wisn.com/nowcast" },
+    fox6: { id: "UCzHN-FjWDMsgfGPvRq7oy-Q", video: "uSvWik9B-hs", name: "FOX6", fallback: "https://www.fox6now.com/live" },
+    wisn: { id: "UC8Tm7Xuz8QekHzjsDxgFNnw", video: "Mn5-YwpDn5Q", name: "WISN 12", fallback: "https://www.wisn.com/nowcast" },
     tmj4: { id: "UCKdALw0BErtqmGI2AUtbbhg", name: "TMJ4", fallback: "https://www.tmj4.com/live" },
     cbs58: { id: "UCDI-R_ASsdHUo4zQYKsFx3g", name: "CBS 58", fallback: "https://www.cbs58.com/" },
     mlb: { id: "UCoLrcjPV5PbUrUyXq5mjc_A", name: "MLB", fallback: "https://www.youtube.com/@MLB/streams" },

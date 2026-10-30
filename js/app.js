@@ -182,8 +182,12 @@
   // =========================================================================
   // YouTube tabs (team feed, TV stations, latest videos)
   // =========================================================================
-  function ytLive(id, autoplay) {
-    return `https://www.youtube.com/embed/live_stream?channel=${id}&autoplay=${autoplay ? 1 : 0}&rel=0`;
+  function ytBase(key) {
+    const c = D.youtube[key];
+    return c.video ? `https://www.youtube.com/embed/${c.video}?` : `https://www.youtube.com/embed/live_stream?channel=${c.id}&`;
+  }
+  function ytLive(key, autoplay) {
+    return `${ytBase(key)}autoplay=${autoplay ? 1 : 0}&rel=0`;
   }
   function setFrame(frameEl, src) {
     frameEl.innerHTML = `<iframe src="${esc(src)}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" title="Video player"></iframe>`;
@@ -247,19 +251,19 @@
     if (live.status[t.channel] !== false) return { kind: "live", src: t.src, note: t.note };
     const stayTuned = `This page checks every minute and will tell you when they go on air. ${alertOptIn()}`;
     const sub = (t.subs || []).find((k) => live.status[k]);
-    if (sub) return { kind: "sub", sub, src: (a) => ytLive(Y[sub].id, a), note: `The Brewers aren't live on YouTube yet, so this is ${esc(Y[sub].name)} for now. ${stayTuned}` };
+    if (sub) return { kind: "sub", sub, src: (a) => ytLive(sub, a), note: `The Brewers aren't live on YouTube yet, so this is ${esc(Y[sub].name)} for now. ${stayTuned}` };
     return { kind: "off", html: t.offline, note: t.subs ? stayTuned : "" };
   }
   function alertOptIn() {
     return "Notification" in window && Notification.permission === "default"
       ? '<button class="btn small" type="button" data-alert-optin>Also alert me in other tabs</button>' : "";
   }
-  function probeChannel(id) {
+  function probeChannel(key) {
     return new Promise((resolve) => {
       const f = document.createElement("iframe");
       f.className = "live-probe"; f.allow = "autoplay; encrypted-media"; f.title = "Live check";
       f.referrerPolicy = "strict-origin-when-cross-origin";
-      f.src = `https://www.youtube.com/embed/live_stream?channel=${id}&autoplay=1&mute=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
+      f.src = `${ytBase(key)}autoplay=1&mute=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
       document.body.appendChild(f);
       let player = null;
       const done = (v) => { clearTimeout(timer); f.remove(); resolve(v); };
@@ -273,7 +277,7 @@
   async function checkLive() {
     const Y = D.youtube;
     const keys = ["brewers"].concat(Y.substitutes);
-    const res = await Promise.all(keys.map((k) => probeChannel(Y[k].id)));
+    const res = await Promise.all(keys.map((k) => probeChannel(k)));
     res.forEach((v, i) => { if (v !== null) live.status[keys[i]] = v; });
     live.ready = true;
     if (live.status.brewers === false) live.wasOffline = true;
@@ -328,17 +332,17 @@
     const offlineCard = (name, href, label) =>
       `<b>${esc(name)} isn't live on YouTube right now.</b><br><br><a class="btn primary small" href="${href}" target="_blank" rel="noopener">${esc(label)}</a>`;
     live.feed = setupTabbedFrames($("#feed-tabs"), $("#feed-frame"), $("#feed-note"), [
-      { label: "Brewers live on YouTube", channel: "brewers", subs: Y.substitutes, src: (a) => ytLive(Y.brewers.id, a),
+      { label: "Brewers live on YouTube", channel: "brewers", subs: Y.substitutes, src: (a) => ytLive("brewers", a),
         offline: offlineCard("Brewers", D.links.freeStream, "Watch free on Brewers.com"),
         note: `Also on <a href="${D.links.freeStream}" target="_blank" rel="noopener">Brewers.com</a> and MLB Network / MLB.TV.` },
       { label: "Latest Brewers videos", src: () => `https://www.youtube.com/embed/videoseries?list=${uploads}&rel=0`,
         note: "The newest uploads from the Brewers' channel. Celebration clips show up here within minutes." },
-      { label: "MLB live", channel: "mlb", src: (a) => ytLive(Y.mlb.id, a), offline: offlineCard("MLB", Y.mlb.fallback, "MLB's live page"), note: "MLB's channel." },
+      { label: "MLB live", channel: "mlb", src: (a) => ytLive("mlb", a), offline: offlineCard("MLB", Y.mlb.fallback, "MLB's live page"), note: "MLB's channel." },
     ]);
     const station = (key) => ({
       label: Y[key].name,
       channel: key,
-      src: (a) => ytLive(Y[key].id, a),
+      src: (a) => ytLive(key, a),
       offline: offlineCard(Y[key].name, Y[key].fallback, `${Y[key].name}'s own live page`),
       note: `${Y[key].name}'s YouTube live feed. Also on <a href="${Y[key].fallback}" target="_blank" rel="noopener">${Y[key].name}'s own live page</a>.`,
     });
