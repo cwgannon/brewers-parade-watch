@@ -45,7 +45,7 @@ Static site, no build step, no dependencies to install.
 - `serve.js` is a zero-dependency static file server so embeds get an `http://` origin.
 
 Data sources that need no key: Open-Meteo, Bluesky public API (`public.api.bsky.app`),
-WisDOT camera stills (`https://511wi.gov/map/Cctv/<viewId>`), OpenStreetMap and Esri tiles,
+WisDOT camera stills (`https://511wi.gov/map/Cctv/<viewId>`), Esri map tiles,
 Waze embed, YouTube embeds.
 
 ## Invariants
@@ -58,8 +58,10 @@ Waze embed, YouTube embeds.
 - `js/data.js` must stay plain data (no fetches, no DOM). It is the file a non-coder edits.
 - Bluesky's `searchPosts` endpoint refuses anonymous browsers (403, no CORS header). Use
   `getFeed` with a feed generator URI or `getAuthorFeed`; both allow CORS.
-- CARTO basemap tiles now require an API key. The "Night" map is OpenStreetMap tiles with a
-  CSS invert filter (`.tiles-night`), not a dark tile provider.
+- Map tiles must come from Esri's ArcGIS Online services (World_Street_Map, World_Imagery).
+  OpenStreetMap's tile servers block publicly shared sites ("Access blocked" tiles) and
+  CARTO now requires an API key. The "Night" map is the Esri street map with a CSS invert
+  filter (`.tiles-night`), not a dark tile provider.
 - The page sets `<meta name="referrer" content="no-referrer">` so WisDOT camera stills and
   third-party images load from any origin. Keep it.
 - Parade times are Central Daylight Time (UTC-5) and are written as full ISO strings with

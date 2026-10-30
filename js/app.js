@@ -260,12 +260,15 @@
   function setupMap() {
     if (typeof L === "undefined") { $("#leaflet").innerHTML = '<div class="placeholder">The map library did not load. Check the connection and refresh.</div>'; return; }
     map = L.map("leaflet", { zoomControl: true, scrollWheelZoom: false, attributionControl: true });
-    // "Night" is the regular OpenStreetMap map with a CSS filter that flips it
-    // dark, so the gold route pops. No API key needed.
-    const osmAttr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-    layers.dark = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, className: "tiles-night", attribution: osmAttr });
-    layers.streets = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: osmAttr });
-    layers.sat = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, attribution: "Tiles &copy; Esri, Maxar, Earthstar Geographics" });
+    // All three layers come from Esri's ArcGIS Online tile services, which allow
+    // public use with attribution and need no key. (OpenStreetMap's own tile
+    // servers block sites that are shared with the public.) "Night" is the
+    // street map with a CSS filter that flips it dark, so the gold route pops.
+    const esri = "https://server.arcgisonline.com/ArcGIS/rest/services/";
+    const streetAttr = "Tiles &copy; Esri &mdash; Esri, TomTom, Garmin, FAO, NOAA, USGS, OpenStreetMap contributors";
+    layers.dark = L.tileLayer(esri + "World_Street_Map/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, className: "tiles-night", attribution: streetAttr });
+    layers.streets = L.tileLayer(esri + "World_Street_Map/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, attribution: streetAttr });
+    layers.sat = L.tileLayer(esri + "World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, attribution: "Tiles &copy; Esri, Maxar, Earthstar Geographics" });
     layers.dark.addTo(map);
     $("#map-layers").addEventListener("click", (e) => {
       const b = e.target.closest("button"); if (!b) return;

@@ -170,7 +170,7 @@ async function main() {
   check("Desktop layout has no sideways scroll", st.overflow <= 0, "overflow " + st.overflow + "px");
   // Things that depend on outside services get a WARN, not a FAIL.
   check("Weather arrived (Open-Meteo)", !!st.wx && !/Weather/.test(st.wx), st.wx, "WARN");
-  check("Map tiles loaded (OpenStreetMap)", st.tiles > 0, st.tiles + " tiles", "WARN");
+  check("Map tiles loaded (Esri)", st.tiles > 0, st.tiles + " tiles", "WARN");
   check("Fan chatter arrived (Bluesky)", st.chatter > 0, st.chatter + " posts", "WARN");
   check("Beat reporters arrived (Bluesky)", st.reporters > 0, st.reporters + " posts", "WARN");
   check("Photo wall has photos", st.photos > 0, st.photos + " photos", "WARN");

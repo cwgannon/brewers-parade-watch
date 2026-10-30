@@ -74,7 +74,7 @@ to zoom that section to full screen. Press `Esc` or the X to come back.
 | --- | --- | --- |
 | Brewers' Own Feed | The team's YouTube live stream, newest team videos, MLB live | YouTube embeds; links to the free Brewers.com stream |
 | Right Now | Countdown, lakefront weather, the day's schedule with a NOW marker | Open-Meteo (no key) |
-| Route Map & Parade Tracker | The route, landmarks, camera pins, an estimated parade position, arrival times for spots along the route | Leaflet + OpenStreetMap / Esri imagery |
+| Route Map & Parade Tracker | The route, landmarks, camera pins, an estimated parade position, arrival times for spots along the route | Leaflet + Esri map tiles |
 | TV Live Streams | FOX6, WISN 12, TMJ4, CBS 58 | YouTube live embeds, with links to each station's own live page |
 | Fan Chatter | Live posts from community-built Brewers feeds | Bluesky public API (no key) |
 | Photo Wall | Every photo from those feeds and the reporters, newest first | Bluesky |
