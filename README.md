@@ -17,3 +17,7 @@ for the idea, and the shape of it is still open.
 
 _Nothing to run yet. When there is, this section says exactly what to type — the
 commands, not a description of the commands._
+
+## License
+
+_Undecided for now. Pick one before this is shared or published._
