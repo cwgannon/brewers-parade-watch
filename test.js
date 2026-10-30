@@ -134,7 +134,8 @@ async function main() {
     wx: (document.querySelector('#wx-chip')||{}).textContent,
     where: (document.querySelector('#where')||{}).textContent,
     schedule: document.querySelectorAll('#timeline li').length,
-    chatter: document.querySelectorAll('#chatter-feed .post').length,
+    chatter: document.querySelectorAll('#chatter-feed .linklist a').length,
+    feedState: document.querySelector('#feed-frame iframe') ? 'player' : (document.querySelector('#feed-frame').textContent || '').trim(),
     reporters: document.querySelectorAll('#reporters-feed .post').length,
     photos: document.querySelectorAll('#photowall img').length,
     camsTotal: document.querySelectorAll('#cam-grid img').length,
@@ -171,7 +172,8 @@ async function main() {
   // Things that depend on outside services get a WARN, not a FAIL.
   check("Weather arrived (Open-Meteo)", !!st.wx && !/Weather/.test(st.wx), st.wx, "WARN");
   check("Map tiles loaded (Esri)", st.tiles > 0, st.tiles + " tiles", "WARN");
-  check("Fan chatter arrived (Bluesky)", st.chatter > 0, st.chatter + " posts", "WARN");
+  check("Fan chatter opens on the X searches", st.chatter === 4, st.chatter + " links");
+  check("Brewers tab shows a player or an offline message", !!st.feedState && !/Checking/.test(st.feedState), st.feedState);
   check("Beat reporters arrived (Bluesky)", st.reporters > 0, st.reporters + " posts", "WARN");
   check("Photo wall has photos", st.photos > 0, st.photos + " photos", "WARN");
   check("Traffic camera stills loaded (WisDOT)", st.camsLoaded > 0, st.camsLoaded + "/" + st.camsTotal, "WARN");

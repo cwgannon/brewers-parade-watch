@@ -111,7 +111,10 @@ window.PW = {
 
   // YouTube channels. "live_stream?channel=" shows whatever that channel is
   // broadcasting right now; if it is not live, YouTube shows an offline card.
+  // "substitutes" fill the Brewers tab until the team goes live, first one on
+  // the air wins.
   youtube: {
+    substitutes: ["fox6", "wisn", "tmj4", "cbs58", "mlb"],
     brewers: { id: "UCybiT6P8jSv7gIxC4cHXl2Q", name: "Brewers", fallback: "https://www.youtube.com/@Brewers/streams" },
     fox6: { id: "UCKQkUrya7CcOoDInIwOMJvg", name: "FOX6", fallback: "https://www.fox6now.com/live" },
     wisn: { id: "UClNiQJqUDBGqe7LygW-fGyA", name: "WISN 12", fallback: "https://www.wisn.com/nowcast" },

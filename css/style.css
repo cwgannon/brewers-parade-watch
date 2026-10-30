@@ -442,3 +442,14 @@ body.locked { overflow: hidden; }
   .dot, .parade-marker { animation: none; }
   html { scroll-behavior: auto; }
 }
+
+/* "Brewers have gone live" alert, above everything including a zoomed tile */
+.live-alert {
+  position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 100000;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
+  width: max-content; max-width: calc(100vw - 24px); padding: 10px 14px; border-radius: 12px;
+  background: var(--navy); border: 2px solid var(--gold); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+.live-alert[hidden] { display: none; }
+/* Off-screen players that ask YouTube who is on the air */
+.live-probe { position: fixed; left: -9999px; top: 0; width: 320px; height: 180px; border: 0; }

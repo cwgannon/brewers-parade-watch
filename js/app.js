@@ -188,41 +188,163 @@
   function setFrame(frameEl, src) {
     frameEl.innerHTML = `<iframe src="${esc(src)}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" title="Video player"></iframe>`;
   }
-  function setupTabbedFrames(tabsEl, frameEl, noteEl, tabs, startAt) {
+  // Tabs tied to a "channel" look up who is on the air first. YouTube shows a
+  // dead "video unavailable" box for a channel that isn't broadcasting, so an
+  // offline tab shows a message instead, or a substitute if it has one.
+  function setupTabbedFrames(tabsEl, frameEl, noteEl, tabs) {
     tabsEl.innerHTML = tabs.map((t, i) =>
       `<button type="button" role="tab" data-i="${i}" aria-selected="${i === 0}">${esc(t.label)}</button>`).join("");
+    let current = 0, shown = {};
+    const render = (autoplay) => {
+      const t = tabs[current];
+      shown = viewFor(t);
+      if (shown.src) setFrame(frameEl, shown.src(autoplay));
+      else frameEl.innerHTML = `<div class="placeholder"><div>${shown.html}</div></div>`;
+      if (noteEl) noteEl.innerHTML = shown.note || "";
+    };
     const show = (i, autoplay) => {
+      current = i;
       $$("button", tabsEl).forEach((b) => b.setAttribute("aria-selected", String(+b.dataset.i === i)));
-      setFrame(frameEl, tabs[i].src(autoplay));
-      if (noteEl) noteEl.innerHTML = tabs[i].note || "";
+      render(autoplay);
     };
     tabsEl.addEventListener("click", (e) => {
       const b = e.target.closest("button");
       if (b) show(+b.dataset.i, true);
     });
-    show(startAt || 0, false);
+    show(0, false);
+    const set = {
+      show,
+      // Called after every live check. Never reloads a video that is playing:
+      // a substitute keeps going until the viewer takes the switch.
+      refresh() {
+        $$("button", tabsEl).forEach((b) => {
+          const t = tabs[+b.dataset.i];
+          b.innerHTML = (t.channel && live.status[t.channel] ? '<span class="dot"></span> ' : "") + esc(t.label);
+        });
+        if (shown.kind === "live") return;
+        if (shown.kind === "sub" && live.status[shown.sub]) {
+          if (live.status[tabs[current].channel] && noteEl) noteEl.innerHTML = "The Brewers are live now. Use the button at the top to switch.";
+          return;
+        }
+        render(false);
+      },
+    };
+    live.tabSets.push(set);
+    return set;
   }
+
+  // ---- who is live? -------------------------------------------------------
+  // The page can't read YouTube directly, so it quietly loads each channel's
+  // live player off-screen and asks it. A player that errors is off the air, or
+  // the channel blocks embedding; both look the same from here. No answer in
+  // time means unknown, and the last known status stands.
+  const LIVE_CHECK_MS = 60 * 1000;
+  const live = { status: {}, ready: false, wasOffline: false, alerted: false, tabSets: [], feed: null };
+  function viewFor(t) {
+    if (!t.channel) return { kind: "plain", src: t.src, note: t.note };
+    const Y = D.youtube;
+    if (!live.ready) return { kind: "wait", html: "Checking who is on the air&hellip;" };
+    if (live.status[t.channel] !== false) return { kind: "live", src: t.src, note: t.note };
+    const stayTuned = `This page checks every minute and will tell you when they go on air. ${alertOptIn()}`;
+    const sub = (t.subs || []).find((k) => live.status[k]);
+    if (sub) return { kind: "sub", sub, src: (a) => ytLive(Y[sub].id, a), note: `The Brewers aren't live on YouTube yet, so this is ${esc(Y[sub].name)} for now. ${stayTuned}` };
+    return { kind: "off", html: t.offline, note: t.subs ? stayTuned : "" };
+  }
+  function alertOptIn() {
+    return "Notification" in window && Notification.permission === "default"
+      ? '<button class="btn small" type="button" data-alert-optin>Also alert me in other tabs</button>' : "";
+  }
+  function probeChannel(id) {
+    return new Promise((resolve) => {
+      const f = document.createElement("iframe");
+      f.className = "live-probe"; f.allow = "autoplay; encrypted-media"; f.title = "Live check";
+      f.referrerPolicy = "strict-origin-when-cross-origin";
+      f.src = `https://www.youtube.com/embed/live_stream?channel=${id}&autoplay=1&mute=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
+      document.body.appendChild(f);
+      let player = null;
+      const done = (v) => { clearTimeout(timer); f.remove(); resolve(v); };
+      const timer = setTimeout(() => done(null), 15000);
+      player = new YT.Player(f, { events: {
+        onError: () => done(false),
+        onStateChange: (e) => { if (e.data === 1 || e.data === 3) done(!!(player.getVideoData() || {}).isLive); },
+      } });
+    });
+  }
+  async function checkLive() {
+    const Y = D.youtube;
+    const keys = ["brewers"].concat(Y.substitutes);
+    const res = await Promise.all(keys.map((k) => probeChannel(Y[k].id)));
+    res.forEach((v, i) => { if (v !== null) live.status[keys[i]] = v; });
+    live.ready = true;
+    if (live.status.brewers === false) live.wasOffline = true;
+    if (live.status.brewers && live.wasOffline) brewersWentLive();
+    live.tabSets.forEach((s) => s.refresh());
+  }
+  function brewersWentLive() {
+    if (live.alerted) return;
+    live.alerted = true;
+    $("#live-alert").hidden = false;
+    document.title = "\u{1F534} Brewers are LIVE - " + document.title;
+    if ("Notification" in window && Notification.permission === "granted") {
+      try {
+        const n = new Notification("The Brewers stream has gone live!", { body: "Switch to the Brewers stream on Parade Watch.", icon: "assets/og.png" });
+        n.onclick = () => { window.focus(); switchToBrewers(); n.close(); };
+      } catch (e) { /* phones only allow alerts from an installed app */ }
+    }
+  }
+  function clearLiveAlert() {
+    $("#live-alert").hidden = true;
+    document.title = document.title.replace(/^\S+ Brewers are LIVE - /, "");
+  }
+  function switchToBrewers() {
+    clearLiveAlert();
+    if (focused && focused.id !== "feed") closeFocus();
+    live.feed.show(0, true);
+    document.getElementById("feed").scrollIntoView({ block: "start" });
+  }
+  function setupLiveWatch() {
+    $("#live-alert-go").addEventListener("click", switchToBrewers);
+    $("#live-alert-close").addEventListener("click", clearLiveAlert);
+    document.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-alert-optin]");
+      if (b) Notification.requestPermission().then(() => b.remove());
+    });
+    // If YouTube's player code can't load (an ad blocker, say), fall back to
+    // plain embeds rather than sitting on "checking" forever.
+    const giveUp = setTimeout(() => { live.ready = true; live.tabSets.forEach((s) => s.refresh()); }, 20000);
+    window.onYouTubeIframeAPIReady = () => {
+      clearTimeout(giveUp);
+      checkLive();
+      setInterval(checkLive, LIVE_CHECK_MS);
+    };
+    const s = document.createElement("script");
+    s.src = "https://www.youtube.com/iframe_api";
+    document.body.appendChild(s);
+  }
+
   function setupVideo() {
     const Y = D.youtube;
     const uploads = "UU" + Y.brewers.id.slice(2);
-    // Live streams only exist around parade time. Outside that window the
-    // "live" embed is just a black box, so start on the videos tab instead.
-    const now = Date.now();
-    const liveWindow = now >= START.getTime() - 20 * 60000 && now <= START.getTime() + 4 * 3600000;
-    setupTabbedFrames($("#feed-tabs"), $("#feed-frame"), $("#feed-note"), [
-      { label: "Brewers live on YouTube", src: (a) => ytLive(Y.brewers.id, a),
-        note: `If YouTube says the stream is offline, the team's free stream is on <a href="${D.links.freeStream}" target="_blank" rel="noopener">Brewers.com</a> and MLB Network / MLB.TV.` },
+    const offlineCard = (name, href, label) =>
+      `<b>${esc(name)} isn't live on YouTube right now.</b><br><br><a class="btn primary small" href="${href}" target="_blank" rel="noopener">${esc(label)}</a>`;
+    live.feed = setupTabbedFrames($("#feed-tabs"), $("#feed-frame"), $("#feed-note"), [
+      { label: "Brewers live on YouTube", channel: "brewers", subs: Y.substitutes, src: (a) => ytLive(Y.brewers.id, a),
+        offline: offlineCard("Brewers", D.links.freeStream, "Watch free on Brewers.com"),
+        note: `Also on <a href="${D.links.freeStream}" target="_blank" rel="noopener">Brewers.com</a> and MLB Network / MLB.TV.` },
       { label: "Latest Brewers videos", src: () => `https://www.youtube.com/embed/videoseries?list=${uploads}&rel=0`,
         note: "The newest uploads from the Brewers' channel. Celebration clips show up here within minutes." },
-      { label: "MLB live", src: (a) => ytLive(Y.mlb.id, a), note: `MLB's channel. If it's offline, try <a href="${Y.mlb.fallback}" target="_blank" rel="noopener">MLB's live page</a>.` },
-    ], liveWindow ? 0 : 1);
+      { label: "MLB live", channel: "mlb", src: (a) => ytLive(Y.mlb.id, a), offline: offlineCard("MLB", Y.mlb.fallback, "MLB's live page"), note: "MLB's channel." },
+    ]);
     const station = (key) => ({
       label: Y[key].name,
+      channel: key,
       src: (a) => ytLive(Y[key].id, a),
-      note: `${Y[key].name}'s YouTube live feed. If it says offline, open <a href="${Y[key].fallback}" target="_blank" rel="noopener">${Y[key].name}'s own live page</a>.`,
+      offline: offlineCard(Y[key].name, Y[key].fallback, `${Y[key].name}'s own live page`),
+      note: `${Y[key].name}'s YouTube live feed. Also on <a href="${Y[key].fallback}" target="_blank" rel="noopener">${Y[key].name}'s own live page</a>.`,
     });
     setupTabbedFrames($("#tv-tabs"), $("#tv-frame"), $("#tv-note"), [station("fox6"), station("wisn"), station("tmj4"), station("cbs58")]);
     setFrame($("#more-frame"), `https://www.youtube.com/embed/videoseries?list=${uploads}&rel=0`);
+    setupLiveWatch();
   }
 
   // =========================================================================
@@ -392,7 +514,7 @@
   }
 
   // ---- fan chatter (community feeds)
-  const chatter = { tab: 0, cache: {} };
+  const chatter = { tab: "x", cache: {} };
   async function feedPosts(uri, limit) {
     const j = await bsky("app.bsky.feed.getFeed", { feed: uri, limit: limit || 40 });
     // Newest first, and skip anything older than a few days (some feeds pin an
@@ -404,10 +526,11 @@
   }
   function setupChatter() {
     const S = D.bluesky.feeds;
-    $("#chatter-tabs").innerHTML = S.map((s, i) => `<button type="button" role="tab" data-i="${i}" aria-selected="${i === 0}">${esc(s.label)}</button>`).join("");
+    $("#chatter-tabs").innerHTML = '<button type="button" role="tab" data-i="x" aria-selected="true">On X</button>' +
+      S.map((s, i) => `<button type="button" role="tab" data-i="${i}" aria-selected="false">${esc(s.label)}</button>`).join("");
     $("#chatter-tabs").addEventListener("click", (e) => {
       const b = e.target.closest("button"); if (!b) return;
-      chatter.tab = +b.dataset.i;
+      chatter.tab = b.dataset.i;
       $$("#chatter-tabs button").forEach((x) => x.setAttribute("aria-selected", String(x === b)));
       loadChatter(true);
     });
@@ -419,8 +542,15 @@
   }
   async function loadChatter(force) {
     if (!visible() && !force) return;
-    const s = D.bluesky.feeds[chatter.tab];
     const feed = $("#chatter-feed");
+    // X won't hand its posts to a web page without a paid account, so this tab
+    // opens X's live searches instead of showing the posts here.
+    if (chatter.tab === "x") {
+      if (force) feed.innerHTML = `<div class="linklist">${D.x.searches.map((q) =>
+        `<a href="${esc(D.links.xSearch(q.q))}" target="_blank" rel="noopener"><span><b>${esc(q.label)}</b><small>Opens live on X</small></span><span class="go">&rarr;</span></a>`).join("")}</div>`;
+      return;
+    }
+    const s = D.bluesky.feeds[chatter.tab];
     try {
       const posts = await feedPosts(s.uri, 40);
       chatter.cache[s.uri] = posts;
