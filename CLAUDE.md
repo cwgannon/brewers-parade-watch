@@ -15,13 +15,17 @@ failed.
 
 ## Commands
 
-From the repo root:
+From the repo root (Node 22+):
 
 ```
-node serve.js            # start the local server and open http://localhost:4848/
+node serve.js            # start the local server and open http://localhost:4848/  (also: start.cmd, npm start)
 node serve.js --no-open  # same, without opening a browser (PORT=4848 env var changes the port)
-node --check js/app.js   # syntax check; there are no tests and no build step
+node test.js             # headless-browser smoke test, screenshots in test-output/  (also: test.cmd, npm test)
+node test.js <url>       # same checks against a live copy, e.g. the GitHub Pages address
 ```
+
+Live site: https://cwgannon.github.io/brewers-parade-watch/ (GitHub Pages, deployed from
+`main`, root folder). The "Smoke test" GitHub Action runs `node test.js` on every push.
 
 ## Architecture
 

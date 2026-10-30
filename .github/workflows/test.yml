@@ -1,0 +1,28 @@
+name: Smoke test
+
+# Runs the same checks as `node test.js` on every push, using the Chrome that
+# comes preinstalled on GitHub's Ubuntu runners. Screenshots are attached to
+# the run as an artifact.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run the smoke test
+        env:
+          BROWSER_PATH: /usr/bin/google-chrome
+        run: node test.js
+      - name: Keep the screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: test-output/

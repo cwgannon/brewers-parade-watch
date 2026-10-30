@@ -49,3 +49,6 @@ tmp/
 # dist/
 # .vite/
 # *.tsbuildinfo
+
+# Smoke-test screenshots
+test-output/

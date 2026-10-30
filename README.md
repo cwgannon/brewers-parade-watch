@@ -7,19 +7,42 @@ Everything is in Brewers navy and gold, and it works on a phone or a big screen.
 
 Built on parade day, Friday, October 30, 2026.
 
-## Running it
+## The live page
 
-You need [Node.js](https://nodejs.org) (any recent version). From this folder:
+**https://cwgannon.github.io/brewers-parade-watch/**
 
-```
-node serve.js
-```
+Share that address with anyone. It is served by GitHub Pages straight from the `main`
+branch of this repo, so every push to `main` updates the live page within a minute or two.
 
-That starts a tiny web server and opens `http://localhost:4848/` in your browser. Press
-`Ctrl+C` in that window to stop it. Nothing gets installed; there is no build step.
+## Running it on this computer
 
-To watch on your phone, keep that window open and, with the phone on the same Wi-Fi, open
-the address the server prints (it looks like `http://192.168.x.x:4848/`).
+You need [Node.js](https://nodejs.org) version 22 or newer. Then either:
+
+- double-click **`start.cmd`**, or
+- in a terminal in this folder, run `node serve.js` (or `npm start`).
+
+Either one starts a tiny web server and opens `http://localhost:4848/` in your browser.
+Close the window (or press `Ctrl+C`) to stop it. Nothing gets installed; there is no build
+step. To watch on your phone from the same Wi-Fi, open the `http://192.168.x.x:4848/`
+address the server prints.
+
+## Testing it
+
+Either:
+
+- double-click **`test.cmd`**, or
+- run `node test.js` (or `npm test`). Add an address to test a live copy instead:
+  `node test.js https://cwgannon.github.io/brewers-parade-watch/`
+
+The test opens the page in a hidden Edge or Chrome window, waits for the live data, and
+checks about twenty things: no script errors, no sideways scrolling on a phone, the
+schedule and route drawn, feeds and cameras populated, and that zooming a tile in and out
+works. It prints PASS / WARN / FAIL per check and saves screenshots (desktop, phone, phone
+with the map zoomed) to `test-output/`. A WARN means an outside service such as Bluesky or
+the DOT cameras did not answer in time, not that the page is broken.
+
+The same test runs automatically on GitHub for every push (the "Smoke test" action), with
+the screenshots attached to each run.
 
 You can also drop the folder on any static web host (GitHub Pages, Netlify, a shared drive
 served over HTTP). The page is plain HTML, CSS and JavaScript. Opening `index.html`
