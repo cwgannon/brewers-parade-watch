@@ -52,3 +52,6 @@ tmp/
 
 # Smoke-test screenshots
 test-output/
+
+# Claude Code worktrees live under the project folder
+.claude/worktrees/
