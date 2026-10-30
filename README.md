@@ -14,6 +14,22 @@ Built on parade day, Friday, October 30, 2026.
 Share that address with anyone. It is served by GitHub Pages straight from the `main`
 branch of this repo, so every push to `main` updates the live page within a minute or two.
 
+### Publishing (first time, and every update)
+
+Double-click **`publish.cmd`**. It creates the GitHub repo if it does not exist yet (public,
+because GitHub Pages needs that on a free account), pushes the current code to `main`, and
+turns on GitHub Pages. Run it again any time to push an update. It needs the
+[GitHub CLI](https://cli.github.com) signed in (`gh auth login`), which is already the case
+on the computer this was built on.
+
+If you would rather do it by hand, these are the three commands it runs:
+
+```
+gh repo create cwgannon/brewers-parade-watch --public
+git push -u origin HEAD:main
+gh api -X POST repos/cwgannon/brewers-parade-watch/pages -f build_type=legacy -f "source[branch]=main" -f "source[path]=/"
+```
+
 ## Running it on this computer
 
 You need [Node.js](https://nodejs.org) version 22 or newer. Then either:

@@ -22,6 +22,7 @@ node serve.js            # start the local server and open http://localhost:4848
 node serve.js --no-open  # same, without opening a browser (PORT=4848 env var changes the port)
 node test.js             # headless-browser smoke test, screenshots in test-output/  (also: test.cmd, npm test)
 node test.js <url>       # same checks against a live copy, e.g. the GitHub Pages address
+publish.cmd              # create the GitHub repo if needed, push main, enable GitHub Pages
 ```
 
 Live site: https://cwgannon.github.io/brewers-parade-watch/ (GitHub Pages, deployed from
