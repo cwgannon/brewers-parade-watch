@@ -341,6 +341,8 @@
       { label: "Brewers live on YouTube", channel: "brewers", subs: Y.substitutes, src: (a) => ytLive("brewers", a),
         offline: offlineCard("Brewers", D.links.freeStream, "Watch free on Brewers.com"),
         note: `Also on <a href="${D.links.freeStream}" target="_blank" rel="noopener">Brewers.com</a> and MLB Network / MLB.TV.` },
+      { label: "Brewers.com feed", src: () => D.links.brewersFeed,
+        note: "The stream from Brewers.com. It carries the FOX6 broadcast, so use it as a backup if the YouTube feed stops." },
       { label: "Latest Brewers videos", src: () => `https://www.youtube.com/embed/videoseries?list=${uploads}&rel=0`,
         note: "The newest uploads from the Brewers' channel. Celebration clips show up here within minutes." },
       { label: "MLB live", channel: "mlb", src: (a) => ytLive("mlb", a), offline: offlineCard("MLB", Y.mlb.fallback, "MLB's live page"), note: "MLB's channel." },

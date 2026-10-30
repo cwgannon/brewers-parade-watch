@@ -168,6 +168,8 @@ window.PW = {
   links: {
     paradePage: "https://www.mlb.com/brewers/fans/parade",
     freeStream: "https://www.mlb.com/brewers/fans/parade",
+    // MLB's published embed of the Brewers.com stream (the FOX6 broadcast).
+    brewersFeed: "https://streamable.com/m/brewers-parade-of-champions-and-championship-rally-251191",
     mlbTv: "https://www.mlb.com/tv",
     googleTraffic: "https://www.google.com/maps/@43.036,-87.906,15z/data=!5m1!1e1",
     wazeLive: "https://www.waze.com/live-map/directions?to=ll.43.0332%2C-87.9000",
