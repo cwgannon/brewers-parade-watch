@@ -218,13 +218,14 @@
       <div class="tile-head">
         <div style="min-width:0">
           <h2>Photo Wall</h2>
-          <div class="sub">Pictures people are posting from the route</div>
+          <div class="sub">Parade-day photos &middot; more links below</div>
         </div>
         <div class="tile-tools"></div>
       </div>
       <div class="tile-body">
         <div class="photowall" id="photowall"><div class="feed-empty">Developing the film&hellip;</div></div>
       </div>
+      <div class="tile-foot" id="photos-foot"></div>
     </section>
 
     <!-- Beat reporters -->
@@ -247,7 +248,7 @@
       <div class="tile-head">
         <div style="min-width:0">
           <h2>Traffic Cameras</h2>
-          <div class="sub">WisDOT stills around downtown &middot; new frame about every 3 min</div>
+          <div class="sub">WisDOT stills around downtown &middot; click one to flip through them all</div>
         </div>
         <div class="tile-tools"></div>
       </div>
@@ -329,6 +330,25 @@
     <p>Built for one fan who couldn&rsquo;t make it downtown. Streams belong to the Brewers, MLB and the stations. Camera stills come from the Wisconsin DOT 511 system. Posts are pulled live from Bluesky&rsquo;s public API. Weather from Open-Meteo. Map tiles from Esri.</p>
     <p>Click any section title, or the expand arrows, to zoom in. Press Esc or the X to come back to the overview.</p>
   </footer>
+
+  <!-- Camera viewer: flip through the cameras without leaving the page -->
+  <div class="cam-viewer" id="cam-viewer" role="dialog" aria-modal="true" aria-labelledby="cam-name" hidden>
+    <div class="cam-bar">
+      <div class="cam-title">
+        <strong id="cam-name"></strong>
+        <small><span id="cam-count"></span> &middot; new frame about every 3 min</small>
+      </div>
+      <button class="btn small" type="button" id="cam-tour" aria-pressed="false">&#9654; Auto tour</button>
+      <button class="icon-btn" type="button" id="cam-close" title="Close (Esc)" aria-label="Close camera viewer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="cam-stage" id="cam-stage">
+      <img id="cam-photo" alt="">
+      <p class="cam-missing" id="cam-missing" hidden>No image from this camera right now</p>
+      <button class="cam-arrow prev" type="button" id="cam-prev" title="Previous camera" aria-label="Previous camera">&#8249;</button>
+      <button class="cam-arrow next" type="button" id="cam-next" title="Next camera" aria-label="Next camera">&#8250;</button>
+    </div>
+    <div class="cam-strip" id="cam-strip"></div>
+  </div>
 
   <canvas id="confetti" aria-hidden="true"></canvas>
 

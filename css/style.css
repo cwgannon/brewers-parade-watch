@@ -420,8 +420,45 @@ img, iframe, video { max-width: 100%; }
 .tile.is-focused .feed, .tile.is-focused .photowall { max-height: none; }
 .tile.is-focused .photowall { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 .tile.is-focused .cams { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+/* Camera viewer: above a zoomed tile (100), below confetti and the live alert */
+.cam-viewer {
+  position: fixed; inset: 0; z-index: 150;
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+  background: var(--navy-ink);
+}
+.cam-viewer[hidden] { display: none; }
+.cam-bar { display: flex; align-items: center; gap: 10px; padding: 10px var(--gutter); padding-top: max(10px, env(safe-area-inset-top)); }
+.cam-title { flex: 1; min-width: 0; }
+.cam-title strong { display: block; font-family: var(--font-display); font-size: 24px; line-height: 1.1; }
+.cam-title small { color: var(--muted); }
+.cam-stage { position: relative; container-type: size; display: grid; place-items: center; touch-action: pinch-zoom; }
+#cam-photo { display: block; width: min(100cqw, calc(100cqh * 4 / 3)); aspect-ratio: 4 / 3; object-fit: contain; background: var(--navy-ink); }
+#cam-photo.waiting { opacity: 0.35; }
+#cam-photo.failed { opacity: 0; }
+.cam-missing { position: absolute; margin: 0; color: var(--muted); }
+.cam-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 52px; height: 52px; padding: 0 0 4px; border-radius: 50%;
+  border: 1px solid var(--line); background: rgba(6, 16, 31, 0.72); color: var(--text);
+  font-size: 34px; line-height: 1; cursor: pointer;
+}
+.cam-arrow:hover, .cam-arrow:focus-visible { border-color: var(--gold); color: var(--gold); outline: none; }
+.cam-arrow.prev { left: 12px; }
+.cam-arrow.next { right: 12px; }
+.cam-strip {
+  position: relative; display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  padding: 10px var(--gutter); padding-bottom: max(10px, env(safe-area-inset-bottom));
+}
+.cam-strip button {
+  flex: 0 0 116px; padding: 0; border: 2px solid transparent; border-radius: 8px; overflow: hidden;
+  background: var(--navy-deep); color: var(--muted); cursor: pointer; text-align: left;
+}
+.cam-strip button:hover, .cam-strip button:focus-visible { border-color: var(--line); outline: none; }
+.cam-strip button.on { border-color: var(--gold); color: var(--text); }
+.cam-strip img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--navy-ink); }
+.cam-strip span { display: block; padding: 3px 5px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tile.is-focused .map-layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: 14px; }
-body.locked { overflow: hidden; }
+body.locked, body.cam-open { overflow: hidden; }
 
 /* ---------- confetti + footer ---------- */
 #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 200; }
@@ -437,6 +474,11 @@ body.locked { overflow: hidden; }
   .tile.is-focused .frame { height: min(58vh, 700px); }
   .tile.is-focused .map-layout { display: block; }
   .weather .temp { font-size: 48px; }
+  .cam-title strong { font-size: 20px; }
+  .cam-arrow { width: 44px; height: 44px; font-size: 28px; }
+  .cam-arrow.prev { left: 6px; }
+  .cam-arrow.next { right: 6px; }
+  .cam-strip button { flex-basis: 88px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .dot, .parade-marker { animation: none; }

@@ -40,7 +40,7 @@
     });
     window.addEventListener("hashchange", applyHash);
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && focused) closeFocus();
+      if (e.key === "Escape" && focused && viewer.hidden) closeFocus();
     });
     applyHash();
   }
@@ -418,9 +418,9 @@
     D.landmarks.forEach((lm) => L.marker([lm.lat, lm.lon], { icon: pinIcon(lm.label, "white") }).addTo(map).bindPopup(`<b>${esc(lm.name)}</b>`));
 
     camLayer = L.layerGroup().addTo(map);
-    D.cams.forEach((c) => {
+    D.cams.forEach((c, i) => {
       const m = L.marker([c.lat, c.lon], { icon: camIcon, title: c.name });
-      m.bindPopup(() => `<b>${esc(c.name)}</b><br><small>WisDOT camera, still refreshes about every 3 min</small><img src="${D.camImage(c.view)}?t=${Date.now()}" alt="${esc(c.name)}" width="320"><a href="${D.camImage(c.view)}" target="_blank" rel="noopener">Open full size</a>`, { maxWidth: 340 });
+      m.bindPopup(() => `<b>${esc(c.name)}</b><br><small>WisDOT camera, still refreshes about every 3 min</small><img src="${D.camImage(c.view)}?t=${Date.now()}" alt="${esc(c.name)}" width="320"><a href="${D.camImage(c.view)}" data-cam="${i}" target="_blank" rel="noopener">View larger and flip through cameras</a>`, { maxWidth: 340 });
       camLayer.addLayer(m);
     });
     $("#show-cams").addEventListener("change", (e) => { if (e.target.checked) camLayer.addTo(map); else map.removeLayer(camLayer); });
@@ -609,7 +609,28 @@
     renderPhotos();
   }
 
-  // ---- photo wall: every image we've seen, newest first
+  // ---- photo wall: parade-day pictures, newest first
+  const photoPool = new Map();
+  const photoWords = new RegExp("\\b(" + D.photos.words.join("|") + ")", "i");
+  const adultLabels = /porn|sexual|nudity|graphic/;
+  function isParadePhoto(p) {
+    const text = [p.record.text].concat(postImages(p).map((im) => im.alt)).join(" ");
+    return new Date(p.record.createdAt) >= new Date(D.photos.since)
+      && !D.photos.skipHandles.includes(p.author.handle)
+      && !(p.labels || []).some((l) => adultLabels.test(l.val))
+      && photoWords.test(text);
+  }
+  function setupPhotos() {
+    const L = D.links;
+    const links = [
+      { label: "Parade photos on X", href: L.xPhotos("brewers parade") },
+      { label: "#ThisIsMyCrew on X", href: L.xPhotos("#ThisIsMyCrew") },
+      { label: "@Brewers on Instagram", href: L.instagram },
+      { label: "r/Brewers", href: L.redditSearch("parade") },
+      { label: "Search Bluesky", href: L.bskySearch("brewers parade") },
+    ];
+    $("#photos-foot").innerHTML = links.map((l) => `<a class="btn small" href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join("");
+  }
   async function loadPhotos(force) {
     if (!visible() && !force) return;
     const F = D.bluesky.feeds;
@@ -618,44 +639,152 @@
     renderPhotos();
   }
   function renderPhotos() {
-    const seen = new Set();
-    const all = [];
+    // The feeds only hand back their latest posts, so photos are kept here once
+    // seen. Otherwise the wall would lose them as new posts push them out.
     Object.values(chatter.cache).flat().concat(reporterPosts).forEach((p) => {
-      if (seen.has(p.uri)) return;
-      seen.add(p.uri);
-      const imgs = postImages(p);
-      if (imgs.length) all.push({ p, imgs });
+      if (postImages(p).length && isParadePhoto(p)) photoPool.set(p.uri, p);
     });
-    all.sort((a, b) => new Date(b.p.record.createdAt) - new Date(a.p.record.createdAt));
+    const posts = [...photoPool.values()].sort((a, b) => new Date(b.record.createdAt) - new Date(a.record.createdAt));
     const wall = $("#photowall");
-    if (!all.length) {
-      wall.innerHTML = emptyFeed("No photos have come through yet. They show up here as people post them.", [{ label: "Photos on X", href: D.links.xSearch("brewers parade filter:media") }]);
+    if (!posts.length) {
+      wall.innerHTML = emptyFeed("No parade photos have come through yet. They show up here as people post them. The links below have more.");
       return;
     }
-    wall.innerHTML = all.slice(0, 60).map(({ p, imgs }) =>
-      `<a href="${esc(postUrl(p))}" target="_blank" rel="noopener" title="${esc(p.record.text || "")}"><img src="${esc(imgs[0].thumb)}" alt="${esc(imgs[0].alt || "")}" loading="lazy"><span>@${esc(p.author.handle)}</span></a>`).join("");
+    wall.innerHTML = posts.flatMap((p) => postImages(p).map((im) => ({ p, im }))).slice(0, 60).map(({ p, im }) =>
+      `<a href="${esc(postUrl(p))}" target="_blank" rel="noopener" title="${esc(p.record.text || "")}"><img src="${esc(im.thumb)}" alt="${esc(im.alt || "")}" loading="lazy"><span>@${esc(p.author.handle)}</span></a>`).join("");
   }
 
   // =========================================================================
   // Traffic cameras
   // =========================================================================
-  let showAllCams = false;
+  let showAllCams = false, camT = Date.now();
+  const camUrl = (c) => `${D.camImage(c.view)}?t=${camT}`;
   function renderCams() {
     const list = showAllCams ? D.cams : D.cams.filter((c) => c.featured);
-    const t = Date.now();
+    camT = Date.now();
     $("#cam-grid").innerHTML = list.map((c) =>
-      `<a class="cam" href="${D.camImage(c.view)}" target="_blank" rel="noopener" title="Open full size"><img src="${D.camImage(c.view)}?t=${t}" alt="${esc(c.name)}" loading="lazy" onerror="this.alt='No image right now'"><figcaption>${esc(c.name)}</figcaption><span class="age">WisDOT</span></a>`).join("");
+      `<a class="cam" href="${D.camImage(c.view)}" data-cam="${D.cams.indexOf(c)}" target="_blank" rel="noopener" title="View larger"><img src="${camUrl(c)}" alt="${esc(c.name)}" loading="lazy" onerror="this.alt='No image right now'"><figcaption>${esc(c.name)}</figcaption><span class="age">WisDOT</span></a>`).join("");
     $("#cams-stamp").textContent = "Frames fetched " + fmtTime(new Date());
-    $("#cams-more").textContent = showAllCams ? "Show the 12 closest" : `Show all ${D.cams.length} cameras`;
+    $("#cams-more").textContent = showAllCams ? `Show the top ${D.cams.filter((c) => c.featured).length}` : `Show all ${D.cams.length} cameras`;
   }
   function refreshCams() {
     if (!visible()) return;
-    const t = Date.now();
-    $$("#cam-grid img").forEach((img) => { img.src = img.src.split("?")[0] + "?t=" + t; });
+    camT = Date.now();
+    $$("#cam-grid img, #cam-strip img").forEach((img) => { img.src = img.src.split("?")[0] + "?t=" + camT; });
+    if (!viewer.hidden) showCam(camIdx);
     $("#cams-stamp").textContent = "Frames fetched " + fmtTime(new Date());
+  }
+
+  // Camera viewer. Opens over the page instead of a new tab, so the streams
+  // underneath keep playing and every camera is one arrow, swipe or tap away.
+  const TOUR_MS = 5000;
+  const viewer = $("#cam-viewer");
+  const photo = $("#cam-photo");
+  let camIdx = 0, touring = false, tourTimer = null, camOpener = null, swipeX = null, swipeY = null;
+
+  function showCam(i) {
+    const n = D.cams.length;
+    camIdx = (i + n) % n;
+    const c = D.cams[camIdx];
+    $("#cam-name").textContent = c.name;
+    $("#cam-count").textContent = `${camIdx + 1} of ${n}`;
+    $("#cam-missing").hidden = true;
+    photo.classList.remove("failed");
+    photo.classList.add("waiting");
+    photo.alt = c.name;
+    photo.src = camUrl(c);
+    const strip = $("#cam-strip");
+    $$("button", strip).forEach((b, k) => {
+      b.classList.toggle("on", k === camIdx);
+      if (k === camIdx) strip.scrollLeft = b.offsetLeft - (strip.clientWidth - b.offsetWidth) / 2;
+    });
+    // Fetch both neighbors ahead of time so the next flip is instant.
+    [camIdx + 1, camIdx - 1].forEach((k) => { new Image().src = camUrl(D.cams[(k + n) % n]); });
+  }
+  function openCam(i) {
+    if (viewer.hidden) {
+      camOpener = document.activeElement;
+      viewer.hidden = false;
+      document.body.classList.add("cam-open");
+      // Everything behind the viewer is off limits to Tab until it closes.
+      $$("body > *").forEach((el) => { if (el !== viewer && !el.classList.contains("live-alert")) el.inert = true; });
+      $("#cam-close").focus();
+      // An extra history step, so the phone's Back button closes the viewer.
+      history.pushState({ camViewer: true }, "");
+    }
+    showCam(i);
+  }
+  function hideCam() {
+    viewer.hidden = true;
+    setTour(false);
+    document.body.classList.remove("cam-open");
+    $$("body > *").forEach((el) => { el.inert = false; });
+    if (camOpener) camOpener.focus({ preventScroll: true });
+  }
+  function closeCam() {
+    if (viewer.hidden) return;
+    hideCam();
+    history.back();
+  }
+  function queueTour() {
+    clearTimeout(tourTimer);
+    if (!touring) return;
+    tourTimer = setTimeout(() => { if (visible()) showCam(camIdx + 1); else queueTour(); }, TOUR_MS);
+  }
+  function setTour(on) {
+    touring = on;
+    const btn = $("#cam-tour");
+    btn.innerHTML = on ? "&#10074;&#10074; Stop tour" : "&#9654; Auto tour";
+    btn.setAttribute("aria-pressed", String(on));
+    queueTour();
+  }
+  function setupCamViewer() {
+    $("#cam-strip").innerHTML = D.cams.map((c, i) =>
+      `<button type="button" data-cam="${i}" title="${esc(c.name)}"><img src="${camUrl(c)}" alt="" loading="lazy"><span>${esc(c.name)}</span></button>`).join("");
+    // Capture phase, because Leaflet stops clicks inside map popups from bubbling.
+    // A ctrl-click or similar on a camera still opens it in a new tab.
+    document.addEventListener("click", (e) => {
+      const el = e.target.closest && e.target.closest("[data-cam]");
+      if (!el || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      e.preventDefault();
+      openCam(Number(el.dataset.cam));
+    }, true);
+    photo.addEventListener("load", () => { photo.classList.remove("waiting"); queueTour(); });
+    photo.addEventListener("error", () => {
+      photo.classList.add("failed");
+      $("#cam-missing").hidden = false;
+      queueTour();
+    });
+    $("#cam-prev").addEventListener("click", () => showCam(camIdx - 1));
+    $("#cam-next").addEventListener("click", () => showCam(camIdx + 1));
+    $("#cam-close").addEventListener("click", closeCam);
+    $("#cam-tour").addEventListener("click", () => setTour(!touring));
+    // Clicking the empty space around the picture closes the viewer.
+    $("#cam-stage").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeCam(); });
+    document.addEventListener("keydown", (e) => {
+      if (viewer.hidden) return;
+      if (e.key === "Escape") closeCam();
+      else if (e.key === "ArrowRight") { e.preventDefault(); showCam(camIdx + 1); }
+      else if (e.key === "ArrowLeft") { e.preventDefault(); showCam(camIdx - 1); }
+    });
+    window.addEventListener("popstate", () => { if (!viewer.hidden) hideCam(); });
+    const stage = $("#cam-stage");
+    stage.addEventListener("touchstart", (e) => {
+      const one = e.touches.length === 1;
+      swipeX = one ? e.touches[0].clientX : null;
+      swipeY = one ? e.touches[0].clientY : null;
+    }, { passive: true });
+    stage.addEventListener("touchend", (e) => {
+      if (swipeX === null) return;
+      const dx = e.changedTouches[0].clientX - swipeX, dy = e.changedTouches[0].clientY - swipeY;
+      swipeX = null;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) showCam(camIdx + (dx < 0 ? 1 : -1));
+      else if (dy > 80) closeCam();
+    });
   }
   function setupCams() {
     renderCams();
+    setupCamViewer();
     $("#cams-more").addEventListener("click", () => { showAllCams = !showAllCams; renderCams(); });
     $("#cams-refresh").addEventListener("click", refreshCams);
   }
@@ -722,7 +851,7 @@
     setInterval(updateTracker, 10 * 1000);
     setupChatter(); setInterval(() => loadChatter(false), 90 * 1000);
     loadReporters(true); setInterval(() => loadReporters(false), 90 * 1000);
-    loadPhotos(true); setInterval(() => loadPhotos(false), 3 * 60 * 1000);
+    setupPhotos(); loadPhotos(true); setInterval(() => loadPhotos(false), 3 * 60 * 1000);
     setupCams(); setInterval(refreshCams, 2 * 60 * 1000);
     setupWaze();
     setupX();

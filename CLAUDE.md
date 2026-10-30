@@ -39,7 +39,7 @@ Static site, no build step, no dependencies to install.
   X handles, links. Change the day here, not in the logic.
 - `js/app.js` does everything else: tile expand/close (focus mode), clock and countdown,
   Open-Meteo weather, YouTube tab frames, the Leaflet map and tracker math, Bluesky fetches
-  (getFeed for chatter, getAuthorFeed for reporters), camera refresh, Waze iframe, X embed,
+  (getFeed for chatter, getAuthorFeed for reporters), camera refresh and viewer, Waze iframe, X embed,
   confetti.
 - `css/style.css` is mobile-first; the grid only becomes 12 columns at 760px.
 - `serve.js` is a zero-dependency static file server so embeds get an `http://` origin.

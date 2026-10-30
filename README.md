@@ -77,9 +77,9 @@ to zoom that section to full screen. Press `Esc` or the X to come back.
 | Route Map & Parade Tracker | The route, landmarks, camera pins, an estimated parade position, arrival times for spots along the route | Leaflet + Esri map tiles |
 | TV Live Streams | FOX6, WISN 12, TMJ4, CBS 58 | YouTube live embeds, with links to each station's own live page |
 | Fan Chatter | Live posts from community-built Brewers feeds | Bluesky public API (no key) |
-| Photo Wall | Every photo from those feeds and the reporters, newest first | Bluesky |
+| Photo Wall | Parade-day photos from those feeds and the reporters (rules in `photos` in `js/data.js`), plus links to photos on X, Instagram and Reddit | Bluesky |
 | Beat Reporters | McCalvy, Hogg, Sammon, Radcliffe, Lobner and @Brewers, merged into one feed | Bluesky |
-| Traffic Cameras | Wisconsin DOT stills around downtown, refreshed every two minutes | 511wi.gov |
+| Traffic Cameras | Wisconsin DOT stills around downtown, refreshed every two minutes. Click one to open a viewer: flip with the arrows, swipe or thumbnails, or run the auto tour | 511wi.gov |
 | Live Traffic Overhead | Waze's live map centered on the route | Waze embed |
 | X / Twitter | The @Brewers timeline plus one-tap searches and reporter handles | X embed (works when X allows it) and plain links |
 | More Ways In | Radio, Reddit, the team's newest videos, MLB Network | Links |

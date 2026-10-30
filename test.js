@@ -138,6 +138,7 @@ async function main() {
     feedState: document.querySelector('#feed-frame iframe') ? document.querySelector('#feed-frame iframe').src : (document.querySelector('#feed-frame').textContent || '').trim(),
     reporters: document.querySelectorAll('#reporters-feed .post').length,
     photos: document.querySelectorAll('#photowall img').length,
+    photoLinks: document.querySelectorAll('#photos-foot a').length,
     camsTotal: document.querySelectorAll('#cam-grid img').length,
     camsLoaded: [...document.querySelectorAll('#cam-grid img')].filter(i => i.naturalWidth > 0).length,
     tiles: document.querySelectorAll('.leaflet-tile-loaded').length,
@@ -175,6 +176,7 @@ async function main() {
   check("Fan chatter opens on the X searches", st.chatter === 4, st.chatter + " links");
   check("Brewers tab shows a player or an offline message", !!st.feedState && !/Checking/.test(st.feedState), st.feedState);
   check("Beat reporters arrived (Bluesky)", st.reporters > 0, st.reporters + " posts", "WARN");
+  check("Photo wall has links to photos elsewhere", st.photoLinks === 5, st.photoLinks + " links");
   check("Photo wall has photos", st.photos > 0, st.photos + " photos", "WARN");
   check("Traffic camera stills loaded (WisDOT)", st.camsLoaded > 0, st.camsLoaded + "/" + st.camsTotal, "WARN");
   await shot("desktop.png", true);
@@ -204,6 +206,46 @@ async function main() {
   await evalJs("document.querySelector('#map .close-btn').click(); 'ok'"); await sleep(600);
   const after = await evalJs("document.querySelectorAll('.tile.is-focused').length + ' ' + location.hash + ' ' + document.body.classList.contains('locked')");
   check("Closing returns to the overview", after === "0 #map false", after);
+
+  // ---- camera viewer -------------------------------------------------------
+  const CAM = `JSON.stringify({
+    open: !document.querySelector('#cam-viewer').hidden,
+    count: document.querySelector('#cam-count').textContent,
+    name: document.querySelector('#cam-name').textContent,
+    photo: document.querySelector('#cam-photo').naturalWidth,
+    size: document.querySelector('#cam-photo').naturalWidth + 'x' + document.querySelector('#cam-photo').naturalHeight,
+    onTop: (document.elementFromPoint(195, 400) || {}).id || '',
+    focused: document.querySelectorAll('.tile.is-focused').length,
+    tabs: document.querySelector('main').inert,
+    overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth
+  })`;
+  const camState = async () => JSON.parse(await evalJs(CAM) || "{}");
+  const press = (key) => evalJs(`document.dispatchEvent(new KeyboardEvent('keydown', { key: '${key}', bubbles: true })); 'ok'`);
+  await evalJs("document.querySelector('#cam-grid a.cam').click(); 'ok'"); await sleep(1500);
+  let cam = await camState();
+  check("Clicking a camera opens the viewer on the page", cam.open && cam.count === "1 of 32" && cam.onTop === "cam-photo", JSON.stringify(cam));
+  check("Viewer has no sideways scroll on a phone", cam.overflow <= 0, "overflow " + cam.overflow + "px");
+  check("Viewer shows the camera picture (WisDOT)", cam.photo > 0, cam.size, "WARN");
+  await shot("phone-camera-viewer.png", false);
+  await press("ArrowRight"); await sleep(300);
+  check("Right arrow goes to the next camera", (await camState()).count === "2 of 32");
+  await press("ArrowLeft"); await press("ArrowLeft"); await sleep(300);
+  check("Left arrow wraps around to the last camera", (await camState()).count === "32 of 32");
+  await press("Escape"); await sleep(400);
+  check("Esc closes the viewer", !(await camState()).open);
+  await evalJs("document.querySelector('#cam-grid a.cam').click(); 'ok'"); await sleep(400);
+  await evalJs("history.back(); 'ok'"); await sleep(600);
+  cam = await camState();
+  check("Back button closes the viewer and stays on the page", !cam.open && !cam.tabs, JSON.stringify(cam));
+
+  await evalJs("document.querySelector('#cams .expand-btn').click(); 'ok'"); await sleep(800);
+  await evalJs("document.querySelector('#cam-grid a.cam').click(); 'ok'"); await sleep(400);
+  await setSize(1400, 900, false);
+  await shot("desktop-camera-viewer.png", false);
+  await press("Escape"); await sleep(400);
+  cam = await camState();
+  check("Esc closes the viewer but not the zoomed tile behind it", !cam.open && cam.focused === 1, JSON.stringify(cam));
+  await evalJs("document.querySelector('#cams .close-btn').click(); 'ok'"); await sleep(400);
 
   // ---- summary -------------------------------------------------------------
   ws.close();

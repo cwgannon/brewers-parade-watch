@@ -74,21 +74,22 @@ window.PW = {
   // Wisconsin DOT (511wi.gov) freeway cameras ringing downtown. The snapshot
   // endpoint returns a fresh still about every 3 minutes. "view" is the 511 view id.
   cams: [
+    { view: 1148, name: "I-794 at Lincoln Memorial Dr (lakefront)", lat: 43.03592, lon: -87.90037, featured: true },
+    { view: 1105, name: "WIS 175 at the stadium (shuttle lots)", lat: 43.02756, lon: -87.96851, featured: true },
+    { view: 1343, name: "I-43 at McKinley Ave", lat: 43.04840, lon: -87.92354, featured: true },
     { view: 1355, name: "I-43 at Wisconsin Ave", lat: 43.03791, lon: -87.92427, featured: true },
     { view: 1137, name: "I-794 at James Lovell St", lat: 43.03624, lon: -87.92060, featured: true },
     { view: 1115, name: "I-794 at 2nd St", lat: 43.03543, lon: -87.91168, featured: true },
-    { view: 1148, name: "I-794 at Lincoln Memorial Dr (lakefront)", lat: 43.03592, lon: -87.90037, featured: true },
-    { view: 1159, name: "Hoan Bridge, north end", lat: 43.02584, lon: -87.89880, featured: true },
-    { view: 1171, name: "Hoan Bridge, south end", lat: 43.01367, lon: -87.89525, featured: true },
-    { view: 949, name: "Marquette Interchange (I-43 / I-94)", lat: 43.03595, lon: -87.92418, featured: true },
-    { view: 1348, name: "I-43 at State St", lat: 43.04251, lon: -87.92484, featured: true },
     { view: 1351, name: "I-43 at Wells St", lat: 43.04035, lon: -87.92558, featured: true },
-    { view: 1306, name: "I-94 at 13th St", lat: 43.03516, lon: -87.92861, featured: true },
-    { view: 1321, name: "I-94 at the Stadium Interchange", lat: 43.03345, lon: -87.96888, featured: true },
-    { view: 1105, name: "WIS 175 at the stadium (shuttle lots)", lat: 43.02756, lon: -87.96851, featured: true },
-    { view: 1339, name: "I-43 at Juneau Ave", lat: 43.04502, lon: -87.92575 },
+    { view: 1339, name: "I-43 at Juneau Ave", lat: 43.04502, lon: -87.92575, featured: true },
+    { view: 1126, name: "I-794 at Carferry Dr", lat: 43.00370, lon: -87.89070, featured: true },
+    { view: 1159, name: "Hoan Bridge, north end", lat: 43.02584, lon: -87.89880 },
+    { view: 1171, name: "Hoan Bridge, south end", lat: 43.01367, lon: -87.89525 },
+    { view: 949, name: "Marquette Interchange (I-43 / I-94)", lat: 43.03595, lon: -87.92418 },
+    { view: 1348, name: "I-43 at State St", lat: 43.04251, lon: -87.92484 },
+    { view: 1306, name: "I-94 at 13th St", lat: 43.03516, lon: -87.92861 },
+    { view: 1321, name: "I-94 at the Stadium Interchange", lat: 43.03345, lon: -87.96888 },
     { view: 1338, name: "I-43 at Highland Ave", lat: 43.04456, lon: -87.92651 },
-    { view: 1343, name: "I-43 at McKinley Ave", lat: 43.04840, lon: -87.92354 },
     { view: 1350, name: "I-43 at Walnut St", lat: 43.05230, lon: -87.92603 },
     { view: 1330, name: "I-43 at Brown St", lat: 43.05661, lon: -87.92516 },
     { view: 1356, name: "I-43 at Wright St", lat: 43.06392, lon: -87.92114 },
@@ -105,7 +106,6 @@ window.PW = {
     { view: 1011, name: "I-43/94 at National Ave", lat: 43.02228, lon: -87.92078 },
     { view: 1010, name: "I-43/94 at Mitchell St", lat: 43.01222, lon: -87.91552 },
     { view: 1007, name: "I-43/94 at Chase Ave", lat: 43.00073, lon: -87.91573 },
-    { view: 1126, name: "I-794 at Carferry Dr", lat: 43.00370, lon: -87.89070 },
   ],
   camImage: (view) => `https://511wi.gov/map/Cctv/${view}`,
 
@@ -144,6 +144,16 @@ window.PW = {
       { label: "Wisconsin sports", uri: "at://did:plc:h2txmusdsltfskh3h5l2ex6l/app.bsky.feed.generator/aaabzf7pa7wuc", q: "milwaukee" },
       { label: "Brewers news", uri: "at://did:plc:dnne5gbk6yjt4ej7as4x3ikl/app.bsky.feed.generator/brewers", q: "brewers" },
     ],
+  },
+
+  // What makes it onto the Photo Wall. A post needs one of these words in its
+  // text or picture description, and must be from parade day. Words match their
+  // endings too, so "crowd" also catches "crowded".
+  photos: {
+    since: "2026-10-30T00:00:00-05:00",
+    words: ["parade", "parading", "rally", "rallies", "trophy", "crowd"],
+    // Accounts to keep off the wall, whatever they post (bots, or anyone unwanted).
+    skipHandles: ["every-topps-card.bsky.social", "mlbbot.bsky.social", "aibaseballmatomeen.bsky.social"],
   },
 
   // X (Twitter). The embedded timeline is hit-or-miss when you are not logged
@@ -185,5 +195,7 @@ window.PW = {
     earthcam: "https://www.earthcam.com/usa/wisconsin/milwaukee/",
     bskySearch: (q) => `https://bsky.app/search?q=${encodeURIComponent(q)}`,
     xSearch: (q) => `https://x.com/search?q=${encodeURIComponent(q)}&f=live`,
+    xPhotos: (q) => `https://x.com/search?q=${encodeURIComponent(q)}&f=media`,
+    redditSearch: (q) => `https://www.reddit.com/r/Brewers/search/?q=${encodeURIComponent(q)}&restrict_sr=1&sort=new`,
   },
 };
