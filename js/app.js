@@ -226,7 +226,7 @@
           b.innerHTML = (t.channel && live.status[t.channel] ? '<span class="dot"></span> ' : "") + esc(t.label);
         });
         if (shown.kind === "live") return;
-        if (shown.kind === "sub" && live.status[shown.sub]) {
+        if (shown.kind === "sub" && live.status[shown.sub] !== false) {
           if (live.status[tabs[current].channel] && noteEl) noteEl.innerHTML = "The Brewers are live now. Use the button at the top to switch.";
           return;
         }
@@ -250,7 +250,8 @@
     if (!live.ready) return { kind: "wait", html: "Checking who is on the air&hellip;" };
     if (live.status[t.channel] !== false) return { kind: "live", src: t.src, note: t.note };
     const stayTuned = `This page checks every minute and will tell you when they go on air. ${alertOptIn()}`;
-    const sub = (t.subs || []).find((k) => live.status[k]);
+    // A slow answer must not bump FOX6 from the top, so only a firm "off air" skips a station.
+    const sub = (t.subs || []).find((k) => live.status[k] !== false);
     if (sub) return { kind: "sub", sub, src: (a) => ytLive(sub, a), note: `The Brewers aren't live on YouTube yet, so this is ${esc(Y[sub].name)} for now. ${stayTuned}` };
     return { kind: "off", html: t.offline, note: t.subs ? stayTuned : "" };
   }
@@ -270,7 +271,12 @@
       const timer = setTimeout(() => done(null), 15000);
       player = new YT.Player(f, { events: {
         onError: () => done(false),
-        onStateChange: (e) => { if (e.data === 1 || e.data === 3) done(!!(player.getVideoData() || {}).isLive); },
+        // A pre-roll ad doesn't report as live, so a named video gets until the timeout.
+        onStateChange: (e) => {
+          if (e.data !== 1 && e.data !== 3) return;
+          const isLive = !!(player.getVideoData() || {}).isLive;
+          if (isLive || !D.youtube[key].video) done(isLive);
+        },
       } });
     });
   }
