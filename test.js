@@ -135,7 +135,7 @@ async function main() {
     where: (document.querySelector('#where')||{}).textContent,
     schedule: document.querySelectorAll('#timeline li').length,
     chatter: document.querySelectorAll('#chatter-feed .linklist a').length,
-    feedState: document.querySelector('#feed-frame iframe') ? 'player' : (document.querySelector('#feed-frame').textContent || '').trim(),
+    feedState: document.querySelector('#feed-frame iframe') ? document.querySelector('#feed-frame iframe').src : (document.querySelector('#feed-frame').textContent || '').trim(),
     reporters: document.querySelectorAll('#reporters-feed .post').length,
     photos: document.querySelectorAll('#photowall img').length,
     camsTotal: document.querySelectorAll('#cam-grid img').length,

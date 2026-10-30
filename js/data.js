@@ -116,10 +116,10 @@ window.PW = {
   youtube: {
     substitutes: ["fox6", "wisn", "tmj4", "cbs58", "mlb"],
     brewers: { id: "UCybiT6P8jSv7gIxC4cHXl2Q", name: "Brewers", fallback: "https://www.youtube.com/@Brewers/streams" },
-    fox6: { id: "UCKQkUrya7CcOoDInIwOMJvg", name: "FOX6", fallback: "https://www.fox6now.com/live" },
-    wisn: { id: "UClNiQJqUDBGqe7LygW-fGyA", name: "WISN 12", fallback: "https://www.wisn.com/nowcast" },
+    fox6: { id: "UCzHN-FjWDMsgfGPvRq7oy-Q", name: "FOX6", fallback: "https://www.fox6now.com/live" },
+    wisn: { id: "UC8Tm7Xuz8QekHzjsDxgFNnw", name: "WISN 12", fallback: "https://www.wisn.com/nowcast" },
     tmj4: { id: "UCKdALw0BErtqmGI2AUtbbhg", name: "TMJ4", fallback: "https://www.tmj4.com/live" },
-    cbs58: { id: "UCWaiavtiHM1Oc00ACDOEDVA", name: "CBS 58", fallback: "https://www.cbs58.com/" },
+    cbs58: { id: "UCDI-R_ASsdHUo4zQYKsFx3g", name: "CBS 58", fallback: "https://www.cbs58.com/" },
     mlb: { id: "UCoLrcjPV5PbUrUyXq5mjc_A", name: "MLB", fallback: "https://www.youtube.com/@MLB/streams" },
   },
 
