@@ -1,0 +1,7 @@
+# Store text as LF and check it out as LF on every OS, so Windows tools
+# that write CRLF can't churn whole-file diffs.
+* text=auto eol=lf
+
+# cmd.exe needs CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf

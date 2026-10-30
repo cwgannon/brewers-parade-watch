@@ -1,0 +1,51 @@
+# Secrets — never commit
+secrets.md
+secrets-export*.txt
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+service-account*.json
+credentials*.json
+
+# OS noise
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Editors
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*~
+
+# Logs and scratch
+*.log
+scratch/
+tmp/
+
+# Uncomment the block that matches once this project picks a stack.
+
+# Python
+# __pycache__/
+# *.py[cod]
+# .venv/
+# venv/
+# .pytest_cache/
+# .ruff_cache/
+# build/
+# dist/
+# *.egg-info/
+
+# Node
+# node_modules/
+# npm-debug.log*
+# yarn-error.log*
+# dist/
+# .vite/
+# *.tsbuildinfo
