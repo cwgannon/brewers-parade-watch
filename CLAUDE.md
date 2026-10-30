@@ -2,12 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-brewers-parade-watch — _TODO: one line on what this is._
-
-This project is **incubating**: it was scaffolded October 30, 2026 and the shape of it is still
-open. Read [`README.md`](README.md) for what it is meant to become. Until there is real
-code here, the most useful thing to do is ask what the smallest useful version looks
-like rather than building the general case.
+brewers-parade-watch — a single-page "parade experience" dashboard for the Brewers' 2026 World
+Series parade: streams, route map with a parade tracker, traffic cameras, fan chatter, beat
+reporters, weather. Built on parade day (October 30, 2026). See [`README.md`](README.md).
 
 ## Communication style
 
@@ -18,16 +15,47 @@ failed.
 
 ## Commands
 
-_None yet. As soon as something runs, list the exact commands here — the literal thing
-to type, with the directory it runs from. This section is the first thing read in a cold
-session, so a stale command here is worse than no command._
+From the repo root:
+
+```
+node serve.js            # start the local server and open http://localhost:4848/
+node serve.js --no-open  # same, without opening a browser (PORT=4848 env var changes the port)
+node --check js/app.js   # syntax check; there are no tests and no build step
+```
 
 ## Architecture
 
-_Nothing built yet. When it is, describe the pieces and how they talk to each other,
-not the file listing — the file listing is discoverable, the reasoning is not._
+Static site, no build step, no dependencies to install.
+
+- `index.html` holds the page skeleton: a sticky header with live status chips, a hero with
+  the countdown, a jump nav, and a 12-column grid of `.tile` sections (one per data source).
+- `js/data.js` is the single source of facts: parade start time, route coordinates, named
+  spots, schedule, WisDOT camera ids, YouTube channel ids, Bluesky feed URIs and handles,
+  X handles, links. Change the day here, not in the logic.
+- `js/app.js` does everything else: tile expand/close (focus mode), clock and countdown,
+  Open-Meteo weather, YouTube tab frames, the Leaflet map and tracker math, Bluesky fetches
+  (getFeed for chatter, getAuthorFeed for reporters), camera refresh, Waze iframe, X embed,
+  confetti.
+- `css/style.css` is mobile-first; the grid only becomes 12 columns at 760px.
+- `serve.js` is a zero-dependency static file server so embeds get an `http://` origin.
+
+Data sources that need no key: Open-Meteo, Bluesky public API (`public.api.bsky.app`),
+WisDOT camera stills (`https://511wi.gov/map/Cctv/<viewId>`), OpenStreetMap and Esri tiles,
+Waze embed, YouTube embeds.
 
 ## Invariants
 
-_Things that must stay true as the code changes. Empty for now; add one the first time
-something breaks because an assumption was not written down._
+- Focus mode must not move a tile in the DOM. It is done with CSS (`.tile.is-focused` is
+  `position: fixed`), so iframes keep playing when a tile is zoomed. Moving the element
+  would reload every video.
+- Every `.tile` has `isolation: isolate`. Without it, Leaflet's internal z-indexes (400 to
+  1000) paint the map and its zoom buttons on top of whichever tile is zoomed in.
+- `js/data.js` must stay plain data (no fetches, no DOM). It is the file a non-coder edits.
+- Bluesky's `searchPosts` endpoint refuses anonymous browsers (403, no CORS header). Use
+  `getFeed` with a feed generator URI or `getAuthorFeed`; both allow CORS.
+- CARTO basemap tiles now require an API key. The "Night" map is OpenStreetMap tiles with a
+  CSS invert filter (`.tiles-night`), not a dark tile provider.
+- The page sets `<meta name="referrer" content="no-referrer">` so WisDOT camera stills and
+  third-party images load from any origin. Keep it.
+- Parade times are Central Daylight Time (UTC-5) and are written as full ISO strings with
+  the offset in `data.js`, so the page is right in any viewer's time zone.

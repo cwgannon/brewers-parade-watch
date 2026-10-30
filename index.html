@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#12284B">
+  <meta name="description" content="One page for the Brewers World Series parade: live streams, the route map, traffic cameras, fan chatter, beat reporters and the weather on the lakefront.">
+  <title>Brewers Parade Watch</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2312284B'/%3E%3Ccircle cx='32' cy='32' r='22' fill='%23FFC52F'/%3E%3Ctext x='32' y='41' text-anchor='middle' font-family='Arial Black,Arial' font-weight='900' font-size='26' fill='%2312284B'%3EM%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="stripes" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#top">
+        <span class="brand-mark" aria-hidden="true">M</span>
+        <span class="brand-text">
+          <strong>Parade Watch</strong>
+          <span>Brewers &middot; 2026 World Series Champions</span>
+        </span>
+      </a>
+      <div class="status">
+        <span class="chip time" id="clock">--:-- CT</span>
+        <span class="chip" id="wx-chip" title="Weather at the lakefront">Weather&hellip;</span>
+        <span class="chip" id="live-badge"><span class="dot idle"></span> Loading</span>
+        <button class="chip gold" id="confetti-btn" type="button" title="Throw confetti">&#127881; Celebrate</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero" id="top">
+    <h1>Parade of <em>Champions</em></h1>
+    <p>
+      Friday, October 30, 2026. The Brewers roll out of downtown at 10 a.m., east on Wisconsin Avenue,
+      through the Third Ward and down to Henry Maier Festival Park for the rally. You can&rsquo;t be on the curb,
+      so this page brings the curb to you: every stream, the route, the cameras, the chatter, the weather.
+    </p>
+    <div class="hero-row">
+      <span class="countdown" id="countdown"><small>Loading</small></span>
+    </div>
+    <div class="hero-row">
+      <a class="btn primary" href="https://www.mlb.com/brewers/fans/parade" target="_blank" rel="noopener">&#9654; Free stream on Brewers.com</a>
+      <a class="btn" href="#map">Route map &amp; parade tracker</a>
+      <a class="btn" href="#tv">TV streams</a>
+      <a class="btn" href="#cams">Traffic cams</a>
+    </div>
+  </section>
+
+  <nav class="jumpnav" aria-label="Sections">
+    <a href="#feed">Brewers feed</a>
+    <a href="#now">Right now</a>
+    <a href="#map">Route map</a>
+    <a href="#tv">TV</a>
+    <a href="#chatter">Fan chatter</a>
+    <a href="#photos">Photos</a>
+    <a href="#reporters">Beat reporters</a>
+    <a href="#cams">Cameras</a>
+    <a href="#traffic">Traffic</a>
+    <a href="#x">X / Twitter</a>
+    <a href="#more">More</a>
+  </nav>
+
+  <main class="grid" id="grid">
+
+    <!-- Brewers' own feed -->
+    <section class="tile span-8" id="feed">
+      <div class="tile-head">
+        <div style="min-width:0">
+          <h2>Brewers&rsquo; Own Feed</h2>
+          <div class="sub">Team YouTube live &middot; free stream on Brewers.com &middot; MLB Network</div>
+        </div>
+        <div class="tile-tools"></div>
+      </div>
+      <div class="tile-body">
+        <div class="tabs" role="tablist" id="feed-tabs"></div>
+        <div class="frame" id="feed-frame"></div>
+        <p class="note" id="feed-note"></p>
+      </div>
+      <div class="tile-foot">
+        <a class="btn primary small" href="https://www.mlb.com/brewers/fans/parade" target="_blank" rel="noopener">Brewers.com free stream</a>
+        <a class="btn small" href="https://www.mlb.com/tv" target="_blank" rel="noopener">MLB.TV</a>
+        <a class="btn small" href="https://x.com/Brewers" target="_blank" rel="noopener">@Brewers on X</a>
+        <a class="btn small" href="https://bsky.app/profile/brewers.com" target="_blank" rel="noopener">Bluesky</a>
+        <a class="btn small" href="https://www.instagram.com/brewers/" target="_blank" rel="noopener">Instagram</a>
+        <a class="btn small" href="https://www.tiktok.com/@brewers" target="_blank" rel="noopener">TikTok</a>
+      </div>
+    </section>
+
+    <!-- Right now: countdown, weather, schedule -->
+    <section class="tile span-4" id="now">
+      <div class="tile-head">
+        <div style="min-width:0">
+          <h2>Right Now</h2>
+          <div class="sub">Lakefront weather &middot; the day&rsquo;s schedule</div>
+        </div>
+        <div class="tile-tools"></div>
+      </div>
+      <div class="tile-body">
+        <div class="weather" id="weather">
+          <div class="temp">--<sup>&deg;</sup></div>
+          <div><div class="desc">Checking the sky over the lakefront&hellip;</div><div class="meta"></div></div>
+        </div>
+        <div class="hourly" id="hourly"></div>
+        <ol class="timeline" id="timeline"></ol>
+      </div>
+    </section>
+
+    <!-- Route map + tracker -->
+    <section class="tile span-7" id="map">
+      <div class="tile-head">
+        <div style="min-width:0">
+          <h2>Route Map &amp; Parade Tracker</h2>
+          <div class="sub">4th &amp; Wisconsin &rarr; Jefferson &rarr; Mason &rarr; Jackson &rarr; Chicago &rarr; the lake</div>
+        </div>
+        <div class="tile-tools"></div>
+      </div>
+      <div class="tile-body">
+        <div class="map-layout">
+          <div>
+            <div class="row" style="justify-content:space-between">
+              <div class="tabs" role="tablist" id="map-layers">
+                <button type="button" data-layer="dark" aria-selected="true">Night</button>
+                <button type="button" data-layer="streets" aria-selected="false">Streets</button>
+                <button type="button" data-layer="sat" aria-selected="false">Overhead</button>
+              </div>
+              <label class="note" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="show-cams" checked> show cameras</label>
+            </div>
+            <div class="frame map" style="margin-top:10px"><div id="leaflet"></div></div>
+            <div class="legend" style="margin-top:8px">
+              <span><i style="background:#ffc52f"></i>Parade route</span>
+              <span><i style="background:#fff"></i>Landmarks</span>
+              <span><i style="background:#1d3a6b;border:2px solid #ffc52f"></i>WisDOT cameras (click for a snapshot)</span>
+            </div>
+          </div>
+          <div class="tracker" style="margin-top:10px">
+            <div class="tracker-row">
+              <span class="where" id="where">Figuring out where the parade is&hellip;</span>
+            </div>
+            <div class="progress"><i id="progress"></i></div>
+            <div class="tracker-row">
+              <label for="pos" class="note">Position</label>
+              <input type="range" id="pos" min="0" max="1000" value="0" aria-label="Parade position along the route">
+              <button class="btn small" type="button" id="follow-clock">Follow the clock</button>
+            </div>
+            <div class="tracker-row">
+              <label for="pace" class="note">Parade takes <b id="pace-label">90</b> min to reach the grounds</label>
+              <input type="range" id="pace" min="45" max="180" step="5" value="90" aria-label="How long the parade takes">
+            </div>
+            <p class="note">The gold marker is an <b>estimate</b> from the clock and the pace above. Nobody publishes a live GPS for the lead float, so nudge the sliders to match what you see on TV.</p>
+            <ul class="spots" id="spots"></ul>
+          </div>
+        </div>
+      </div>
+      <div class="tile-foot">
+        <a class="btn small" href="https://www.mlb.com/brewers/fans/parade" target="_blank" rel="noopener">Official parade page</a>
+        <a class="btn small" href="https://www.ridemcts.com/alerts" target="_blank" rel="noopener">MCTS bus detours</a>
+        <a class="btn small" href="https://511wi.gov/map" target="_blank" rel="noopener">511 Wisconsin map</a>
+      </div>
+    </section>
+
+    <!-- TV streams -->
+    <section class="tile span-5" id="tv">
+      <div class="tile-head">
+        <div style="min-width:0">
+          <h2>TV Live Streams</h2>
+          <div class="sub">FOX6 is the official broadcast partner &middot; WISN &middot; TMJ4 &middot; CBS 58 &middot; MLB</div>
+        </div>
+        <div class="tile-tools"></div>
+      </div>
+      <div class="tile-body">
+        <div class="tabs" role="tablist" id="tv-tabs"></div>
+        <div class="frame" id="tv-frame"></div>
+        <p class="note" id="tv-note"></p>
+      </div>
+    </section>
+
+    <!-- Fan chatter (Bluesky) -->
+    <section class="tile span-4" id="chatter">
+      <div class="tile-head">
+        <div style="min-width:0">
+          <h2>Fan Chatter</h2>
+          <div class="sub">Live from Bluesky &middot; refreshes every 90 s</div>
+        </div>
+        <div class="tile-tools"></div>
+      </div>
+      <div class="tile-body">
+        <div class="tabs" role="tablist" id="chatter-tabs"></div>
+        <div class="feed" id="chatter-feed"><div class="feed-empty">Loading the crowd&hellip;</div></div>
+      </div>
+      <div class="tile-foot" id="chatter-foot"></div>
+    </section>
+
+    <!-- Photo wall -->
+    <section class="tile span-4" id="photos">
+      <div class="tile-head">
+        <div style="min-width:0">
+          <h2>Photo Wall</h2>
+          <div class="sub">Pictures people are posting from the route</div>
+        </div>
+        <div class="tile-tools"></div>
+      </div>
+      <div class="tile-body">
+        <div class="photowall" id="photowall"><div class="feed-empty">Developing the film&hellip;</div></div>
+      </div>
+    </section>
+
+    <!-- Beat reporters -->
+    <section class="tile span-4" id="reporters">
+      <div class="tile-head">
+        <div style="min-width:0">
+          <h2>Beat Reporters</h2>
+          <div class="sub">McCalvy &middot; Hogg &middot; Sammon &middot; Radcliffe &middot; Lobner &middot; @Brewers</div>
+        </div>
+        <div class="tile-tools"></div>
+      </div>
+      <div class="tile-body">
+        <div class="feed" id="reporters-feed"><div class="feed-empty">Checking the press box&hellip;</div></div>
+      </div>
+      <div class="tile-foot" id="reporters-foot"></div>
+    </section>
+
+    <!-- Traffic cameras -->
+    <section class="tile span-6" id="cams">
+      <div class="tile-head">
+        <div style="min-width:0">
+          <h2>Traffic Cameras</h2>
+          <div class="sub">WisDOT stills around downtown &middot; new frame about every 3 min</div>
+        </div>
+        <div class="tile-tools"></div>
+      </div>
+      <div class="tile-body">
+        <div class="cams" id="cam-grid"></div>
+        <div class="row">
+          <button class="btn small" type="button" id="cams-more">Show all 32 cameras</button>
+          <button class="btn small" type="button" id="cams-refresh">Refresh now</button>
+          <span class="note" id="cams-stamp"></span>
+        </div>
+        <div class="linklist">
+          <a href="https://www.fox6now.com/live-cameras-downtown-milwaukee" target="_blank" rel="noopener"><span><b>FOX6 downtown skycam</b><small>Looks toward City Hall and the river</small></span><span class="go">&rarr;</span></a>
+          <a href="https://www.fox6now.com/live-cameras-clark" target="_blank" rel="noopener"><span><b>FOX6 Clark building cam</b><small>Marquette Interchange, courthouse, American Family Field</small></span><span class="go">&rarr;</span></a>
+          <a href="https://www.earthcam.com/usa/wisconsin/milwaukee/" target="_blank" rel="noopener"><span><b>EarthCam: Milwaukee Riverwalk</b><small>Live video of the river and the skyline</small></span><span class="go">&rarr;</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live traffic (Waze) -->
+    <section class="tile span-6" id="traffic">
+      <div class="tile-head">
+        <div style="min-width:0">
+          <h2>Live Traffic Overhead</h2>
+          <div class="sub">Waze live map centered on the route &middot; jams, closures, alerts</div>
+        </div>
+        <div class="tile-tools"></div>
+      </div>
+      <div class="tile-body">
+        <div class="frame map" id="waze-frame"></div>
+        <p class="note">Red roads are jammed, dashed roads are closed. Pinch or scroll to zoom. The Brewers.com shuttles run from American Family Field, about 3 miles west.</p>
+      </div>
+      <div class="tile-foot">
+        <a class="btn small" href="https://www.google.com/maps/@43.036,-87.906,15z/data=!5m1!1e1" target="_blank" rel="noopener">Google Maps traffic layer</a>
+        <a class="btn small" href="https://www.waze.com/live-map/" target="_blank" rel="noopener">Open Waze live map</a>
+        <a class="btn small" href="https://511wi.gov/map" target="_blank" rel="noopener">511wi.gov</a>
+      </div>
+    </section>
+
+    <!-- X / Twitter -->
+    <section class="tile span-6" id="x">
+      <div class="tile-head">
+        <div style="min-width:0">
+          <h2>X / Twitter</h2>
+          <div class="sub">@Brewers timeline &middot; beat writers &middot; live searches</div>
+        </div>
+        <div class="tile-tools"></div>
+      </div>
+      <div class="tile-body">
+        <div class="xembed" id="xembed"></div>
+        <p class="note">X only shows embedded timelines some of the time (it helps to be logged in). Every link below opens on X itself.</p>
+        <div class="linklist" id="x-links"></div>
+      </div>
+    </section>
+
+    <!-- More ways in -->
+    <section class="tile span-6" id="more">
+      <div class="tile-head">
+        <div style="min-width:0">
+          <h2>More Ways In</h2>
+          <div class="sub">Radio, Reddit, the latest Brewers videos</div>
+        </div>
+        <div class="tile-tools"></div>
+      </div>
+      <div class="tile-body">
+        <div class="frame" id="more-frame"></div>
+        <p class="note">Newest videos from the Brewers&rsquo; YouTube channel. The celebration clips land here first.</p>
+        <div class="linklist">
+          <a href="https://wtmj.com/" target="_blank" rel="noopener"><span><b>620 WTMJ, the Brewers&rsquo; radio home</b><small>Listen live from the station&rsquo;s site</small></span><span class="go">&rarr;</span></a>
+          <a href="https://www.reddit.com/r/Brewers/new/" target="_blank" rel="noopener"><span><b>r/Brewers, newest posts</b><small>Game-thread energy, parade edition</small></span><span class="go">&rarr;</span></a>
+          <a href="https://www.mlb.com/brewers/fans/parade" target="_blank" rel="noopener"><span><b>Brewers.com parade page</b><small>Shuttles, bag policy, official updates</small></span><span class="go">&rarr;</span></a>
+          <a href="https://www.mlb.com/network" target="_blank" rel="noopener"><span><b>MLB Network</b><small>National coverage of the parade</small></span><span class="go">&rarr;</span></a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot">
+    <p>Built for one fan who couldn&rsquo;t make it downtown. Streams belong to the Brewers, MLB and the stations. Camera stills come from the Wisconsin DOT 511 system. Posts are pulled live from Bluesky&rsquo;s public API. Weather from Open-Meteo. Map tiles from OpenStreetMap and Esri.</p>
+    <p>Click any section title, or the expand arrows, to zoom in. Press Esc or the X to come back to the overview.</p>
+  </footer>
+
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

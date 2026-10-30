@@ -1,22 +1,59 @@
-# brewers-parade-watch
+# Brewers Parade Watch
 
-_TODO: one line on what this is._
+One page that brings the Brewers' World Series parade to you when you can't be on the curb:
+the live streams, the route on a map with a parade tracker, downtown traffic cameras, a live
+traffic map, fan chatter and photos, the beat reporters, and the weather on the lakefront.
+Everything is in Brewers navy and gold, and it works on a phone or a big screen.
 
-## Status
-
-**Incubating.** Scaffolded October 30, 2026. Nothing runs yet — this repo is a parking spot
-for the idea, and the shape of it is still open.
-
-## What this needs to become real
-
-- [ ] Decide the smallest version that would actually be useful
-- [ ] Pick a stack and add the runtime scaffolding
-- [ ] Write the first thing that runs
+Built on parade day, Friday, October 30, 2026.
 
 ## Running it
 
-_Nothing to run yet. When there is, this section says exactly what to type — the
-commands, not a description of the commands._
+You need [Node.js](https://nodejs.org) (any recent version). From this folder:
+
+```
+node serve.js
+```
+
+That starts a tiny web server and opens `http://localhost:4848/` in your browser. Press
+`Ctrl+C` in that window to stop it. Nothing gets installed; there is no build step.
+
+To watch on your phone, keep that window open and, with the phone on the same Wi-Fi, open
+the address the server prints (it looks like `http://192.168.x.x:4848/`).
+
+You can also drop the folder on any static web host (GitHub Pages, Netlify, a shared drive
+served over HTTP). The page is plain HTML, CSS and JavaScript. Opening `index.html`
+straight from the file system mostly works, but YouTube and Waze embeds prefer a real
+`http://` address, which is why `serve.js` exists.
+
+## What's on the page
+
+Every section is a tile on the overview. Click a tile's title, or the arrows in its corner,
+to zoom that section to full screen. Press `Esc` or the X to come back.
+
+| Tile | What it shows | Where it comes from |
+| --- | --- | --- |
+| Brewers' Own Feed | The team's YouTube live stream, newest team videos, MLB live | YouTube embeds; links to the free Brewers.com stream |
+| Right Now | Countdown, lakefront weather, the day's schedule with a NOW marker | Open-Meteo (no key) |
+| Route Map & Parade Tracker | The route, landmarks, camera pins, an estimated parade position, arrival times for spots along the route | Leaflet + OpenStreetMap / Esri imagery |
+| TV Live Streams | FOX6, WISN 12, TMJ4, CBS 58 | YouTube live embeds, with links to each station's own live page |
+| Fan Chatter | Live posts from community-built Brewers feeds | Bluesky public API (no key) |
+| Photo Wall | Every photo from those feeds and the reporters, newest first | Bluesky |
+| Beat Reporters | McCalvy, Hogg, Sammon, Radcliffe, Lobner and @Brewers, merged into one feed | Bluesky |
+| Traffic Cameras | Wisconsin DOT stills around downtown, refreshed every two minutes | 511wi.gov |
+| Live Traffic Overhead | Waze's live map centered on the route | Waze embed |
+| X / Twitter | The @Brewers timeline plus one-tap searches and reporter handles | X embed (works when X allows it) and plain links |
+| More Ways In | Radio, Reddit, the team's newest videos, MLB Network | Links |
+
+The parade tracker is an estimate: nobody publishes live GPS for the lead float. It assumes
+the parade steps off at 10 a.m. and takes 90 minutes to reach the festival grounds. Two
+sliders let you nudge the position and the pace to match what you see on TV.
+
+## Changing things
+
+All the facts live in `js/data.js`: start time, route coordinates, named spots, schedule,
+camera ids, YouTube channel ids, Bluesky handles, X handles and links. Edit that file and
+refresh. The page logic is in `js/app.js` and the look is in `css/style.css`.
 
 ## License
 
